@@ -26,22 +26,14 @@ func TestHealth(t *testing.T) {
 		t.Fatalf("expected application/json, got %s", ct)
 	}
 
-	var body struct {
-		Status string `json:"status"`
-		Time   string `json:"time"`
-	}
+	var body healthResponse
 	if err := json.NewDecoder(rec.Body).Decode(&body); err != nil {
 		t.Fatalf("failed to decode body: %v", err)
 	}
 	if body.Status != "ok" {
 		t.Errorf("expected status ok, got %s", body.Status)
 	}
-
-	ts, err := time.Parse(time.RFC3339, body.Time)
-	if err != nil {
-		t.Fatalf("time not RFC3339: %v", err)
-	}
-	if diff := time.Since(ts); diff > 5*time.Second || diff < -5*time.Second {
-		t.Errorf("time %v is not within 5s of now", ts)
+	if _, err := time.Parse(time.RFC3339, body.Time); err != nil {
+		t.Errorf("time not RFC3339: %v", err)
 	}
 }

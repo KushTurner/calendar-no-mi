@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -27,12 +29,6 @@ func main() {
 	h := handler.NewHandler()
 	h.Routes(r)
 
-	// Protected route group (Phase 1 routes will be added here)
-	r.Group(func(r chi.Router) {
-		r.Use(bearerAuth(cfg.BearerToken))
-		// r.Post("/events", h.CreateEvent)
-	})
-
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%s", cfg.HTTPPort),
 		Handler:      r,
@@ -40,21 +36,22 @@ func main() {
 		WriteTimeout: 30 * time.Second,
 	}
 
-	log.Printf("listening on :%s", cfg.HTTPPort)
-	if err := srv.ListenAndServe(); err != nil {
-		log.Fatalf("server: %v", err)
-	}
-}
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
 
-func bearerAuth(token string) func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			auth := r.Header.Get("Authorization")
-			if !strings.HasPrefix(auth, "Bearer ") || strings.TrimPrefix(auth, "Bearer ") != token {
-				http.Error(w, "unauthorized", http.StatusUnauthorized)
-				return
-			}
-			next.ServeHTTP(w, r)
-		})
+	go func() {
+		log.Printf("listening on http://localhost:%s", cfg.HTTPPort)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("server: %v", err)
+		}
+	}()
+
+	<-ctx.Done()
+	stop()
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		log.Fatalf("shutdown: %v", err)
 	}
 }

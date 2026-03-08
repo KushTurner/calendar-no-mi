@@ -8,6 +8,11 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+type healthResponse struct {
+	Status string `json:"status"`
+	Time   string `json:"time"`
+}
+
 type Handler struct{}
 
 func NewHandler() *Handler { return &Handler{} }
@@ -18,9 +23,8 @@ func (h *Handler) Routes(r chi.Router) {
 
 func (h *Handler) Health(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(struct {
-		Status string `json:"status"`
-		Time   string `json:"time"`
-	}{"ok", time.Now().UTC().Format(time.RFC3339)})
+	_ = json.NewEncoder(w).Encode(healthResponse{
+		Status: "ok",
+		Time:   time.Now().UTC().Format(time.RFC3339),
+	})
 }
