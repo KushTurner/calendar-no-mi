@@ -7,18 +7,16 @@ import (
 )
 
 type Config struct {
-	HTTPPort    string
-	BearerToken string
+	HTTPPort string
 }
 
 func Load() (*Config, error) {
-	godotenv.Load()
+	_ = godotenv.Load() // no-op if .env absent
 	port := os.Getenv("HTTP_PORT")
 	if port == "" {
 		port = "8080"
 	}
 	return &Config{
-		HTTPPort:    port,
-		BearerToken: os.Getenv("BEARER_TOKEN"),
+		HTTPPort: port,
 	}, nil
 }

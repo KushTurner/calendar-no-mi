@@ -13,7 +13,6 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 
 	"github.com/kushturner/calendar-no-mi/internal/config"
-	"github.com/kushturner/calendar-no-mi/internal/handler"
 )
 
 func main() {
@@ -26,9 +25,6 @@ func main() {
 	r.Use(middleware.Heartbeat("/health"))
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
-
-	h := handler.NewHandler()
-	_ = h
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%s", cfg.HTTPPort),
@@ -48,7 +44,6 @@ func main() {
 	}()
 
 	<-ctx.Done()
-	stop()
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()

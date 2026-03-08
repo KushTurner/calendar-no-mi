@@ -6,35 +6,25 @@ import (
 
 func TestLoad(t *testing.T) {
 	tests := []struct {
-		name        string
-		env         map[string]string
-		wantPort    string
-		wantToken   string
+		name     string
+		env      map[string]string
+		wantPort string
 	}{
 		{
-			name:      "defaults port to 8080",
-			env:       map[string]string{},
-			wantPort:  "8080",
-			wantToken: "",
+			name:     "defaults port to 8080",
+			env:      map[string]string{},
+			wantPort: "8080",
 		},
 		{
-			name:      "uses provided port",
-			env:       map[string]string{"HTTP_PORT": "9090"},
-			wantPort:  "9090",
-			wantToken: "",
-		},
-		{
-			name:      "loads bearer token",
-			env:       map[string]string{"BEARER_TOKEN": "secret"},
-			wantPort:  "8080",
-			wantToken: "secret",
+			name:     "uses provided port",
+			env:      map[string]string{"HTTP_PORT": "9090"},
+			wantPort: "9090",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Setenv("HTTP_PORT", "")
-			t.Setenv("BEARER_TOKEN", "")
 			for k, v := range tt.env {
 				t.Setenv(k, v)
 			}
@@ -45,9 +35,6 @@ func TestLoad(t *testing.T) {
 			}
 			if cfg.HTTPPort != tt.wantPort {
 				t.Errorf("HTTPPort = %q, want %q", cfg.HTTPPort, tt.wantPort)
-			}
-			if cfg.BearerToken != tt.wantToken {
-				t.Errorf("BearerToken = %q, want %q", cfg.BearerToken, tt.wantToken)
 			}
 		})
 	}
