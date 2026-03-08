@@ -1,0 +1,22 @@
+{
+  "enabledPlugins": {
+    "ce@claude-essentials": true
+  },
+  "permissions": {
+    "allow": [
+      "Skill",
+      "WebFetch",
+      "WebSearch",
+      "Bash(git:*)",
+      "Bash(go:*)",
+      "Bash(make:*)"
+    ],
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(rm -rf ~)",
+      "Bash(git push --force)",
+      "Bash(git push -f)",
+      "Bash(git reset --hard)"
+    ]
+  }
+}
