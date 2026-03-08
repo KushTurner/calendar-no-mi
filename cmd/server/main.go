@@ -23,11 +23,12 @@ func main() {
 	}
 
 	r := chi.NewRouter()
+	r.Use(middleware.Heartbeat("/health"))
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
 	h := handler.NewHandler()
-	h.Routes(r)
+	_ = h
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%s", cfg.HTTPPort),
