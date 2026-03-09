@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -36,6 +38,7 @@ func TestHandler_CreateEvent(t *testing.T) {
 
 	tests := []struct {
 		name           string
+		cfg            *config.Config
 		authHeader     string
 		body           string
 		svcResult      models.Result
@@ -44,6 +47,13 @@ func TestHandler_CreateEvent(t *testing.T) {
 		wantBodyKey    string
 		wantBodyValue  string
 	}{
+		{
+			name:       "empty bearer token in config returns 500",
+			cfg:        &config.Config{HTTPBearerToken: ""},
+			authHeader: "Bearer anything",
+			body:       `{"text":"lunch tomorrow"}`,
+			wantStatus: http.StatusInternalServerError,
+		},
 		{
 			name:        "missing authorization header",
 			authHeader:  "",
@@ -91,7 +101,12 @@ func TestHandler_CreateEvent(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			h := NewHandler(testConfig(), &stubService{result: tc.svcResult, err: tc.svcErr})
+			cfg := tc.cfg
+			if cfg == nil {
+				cfg = testConfig()
+			}
+			discardLogger := slog.New(slog.NewTextHandler(io.Discard, nil))
+			h := NewHandler(cfg, &stubService{result: tc.svcResult, err: tc.svcErr}, discardLogger)
 
 			req := httptest.NewRequest(http.MethodPost, "/event", strings.NewReader(tc.body))
 			req.Header.Set("Content-Type", "application/json")
