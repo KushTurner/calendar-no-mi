@@ -10,6 +10,7 @@ go test ./...           # Run all tests
 go test ./... -v        # Verbose test output
 go vet ./...            # Static analysis
 go run cmd/server/main.go  # Run the server
+bruno run --env local      # Run Bruno API collection against local server
 ```
 
 ## Architecture

@@ -4,6 +4,9 @@ meta {
   seq: 5
 }
 
+# NOTE: See create-event-overlap-1. In v1 this creates a second event at the
+# same time — no conflict detection. Expected to return 201, not 409.
+
 post {
   url: {{BASE_URL}}/event
   body: json
@@ -18,4 +21,9 @@ body:json {
   {
     "text": "Call with Mike tomorrow at 3pm for 30 minutes"
   }
+}
+
+tests {
+  res.status == 201
+  res.body.event_url != ""
 }

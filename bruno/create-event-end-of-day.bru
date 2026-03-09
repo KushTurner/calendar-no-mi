@@ -19,3 +19,8 @@ body:json {
     "text": "Meeting from 2pm until end of day tomorrow"
   }
 }
+
+tests {
+  res.status == 201
+  res.body.event_url != ""
+}

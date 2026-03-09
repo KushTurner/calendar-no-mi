@@ -4,6 +4,12 @@ meta {
   seq: 4
 }
 
+# NOTE: Conflict detection is deferred to v2. Running this followed by
+# create-event-overlap-2 will create two separate events — no 409 or
+# clarification response is returned in v1. These requests exist to
+# verify event creation works for overlapping times; add assertions
+# here when Phase 2 conflict detection ships.
+
 post {
   url: {{BASE_URL}}/event
   body: json
@@ -18,4 +24,9 @@ body:json {
   {
     "text": "Team standup tomorrow at 3pm for 30 minutes"
   }
+}
+
+tests {
+  res.status == 201
+  res.body.event_url != ""
 }

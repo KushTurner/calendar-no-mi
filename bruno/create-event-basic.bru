@@ -19,3 +19,8 @@ body:json {
     "text": "Lunch with Sarah tomorrow at 1pm for an hour"
   }
 }
+
+tests {
+  res.status == 201
+  res.body.event_url != ""
+}
