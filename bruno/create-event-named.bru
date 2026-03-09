@@ -1,0 +1,26 @@
+meta {
+  name: Create Event - Named
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BASE_URL}}/event
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{BEARER_TOKEN}}
+}
+
+body:json {
+  {
+    "text": "Schedule a meeting called 'Project Review' on Friday at 2pm for 1 hour"
+  }
+}
+
+tests {
+  res.status == 201
+  res.body.event_url != ""
+}
