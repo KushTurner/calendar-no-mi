@@ -37,7 +37,7 @@ Go to [platform.openai.com/api-keys](https://platform.openai.com/api-keys), crea
 1. Go to [Google Cloud Console](https://console.cloud.google.com/) and create a project.
 2. Enable the **Google Calendar API**: APIs & Services → Library → search "Google Calendar API" → Enable.
 3. Create OAuth credentials: APIs & Services → Credentials → Create Credentials → **OAuth client ID**.
-   - Application type: **Desktop app**
+   - Application type: **Desktop app** (required — the helper binds `localhost:9999` for the OAuth callback)
    - Name it anything (e.g. "calendar-no-mi")
 4. Download the JSON file and save it as `credentials.json` in the project root.
 
@@ -55,12 +55,12 @@ go run cmd/auth/main.go credentials.json
 
 It will:
 1. Print an authorization URL — open it in your browser
-2. Ask you to grant calendar access
-3. Print the refresh token to your terminal
+2. Grant calendar access in the browser; the callback is handled automatically
+3. Print the refresh token to your terminal once the flow completes
 
 Copy the `GOOGLE_REFRESH_TOKEN=...` line it prints into your `.env`.
 
-> The refresh token doesn't expire. Treat it like a password and keep it out of version control.
+> The refresh token is long-lived but can be revoked. Treat it like a password and keep it out of version control.
 >
 > If you ever need a new one, revoke the app's access at [myaccount.google.com/permissions](https://myaccount.google.com/permissions) and re-run the helper.
 
@@ -92,7 +92,7 @@ OPENAI_API_KEY=sk-...
 HTTP_BEARER_TOKEN=your_secret_token_here
 
 # Your local timezone (used when the LLM interprets event times)
-DEFAULT_TIMEZONE=America/New_York
+DEFAULT_TIMEZONE=Europe/London
 ```
 
 `HTTP_BEARER_TOKEN` is used to authenticate requests to `POST /event`. Set it to any secret string you choose.
@@ -118,4 +118,8 @@ curl -X POST http://localhost:8080/event \
   -d '{"text": "Team standup tomorrow at 9am for 30 minutes"}'
 ```
 
-A successful response returns the created event details. If the time conflicts with an existing event, you'll get a clarification prompt instead.
+A successful response returns a link to the created event:
+
+```json
+{"event_url": "https://www.google.com/calendar/event?eid=..."}
+```
