@@ -6,13 +6,14 @@
 //
 // Opens a browser for Google consent, then prints the refresh token to stdout.
 // Copy the token into your .env as GOOGLE_REFRESH_TOKEN.
+//
+// WARNING: Do not redirect stdout to a log file or CI artifact store — output contains a credential.
 package main
 
 import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -121,13 +122,6 @@ func main() {
 		log.Fatal("no refresh token returned by Google — revoke app access at " +
 			"https://myaccount.google.com/permissions and re-run")
 	}
-
-	out, err := json.MarshalIndent(token, "", "  ")
-	if err != nil {
-		log.Fatalf("marshal token: %v", err)
-	}
-	fmt.Println("\n--- Token details ---")
-	fmt.Println(string(out))
 
 	fmt.Println("\n--- Copy this into your .env ---")
 	fmt.Printf("GOOGLE_REFRESH_TOKEN=%s\n", token.RefreshToken)

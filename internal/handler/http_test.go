@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -91,7 +92,7 @@ func TestHandler_CreateEvent(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			h := NewHandler(testConfig(), &stubService{result: tc.svcResult, err: tc.svcErr})
+			h := NewHandler(testConfig(), &stubService{result: tc.svcResult, err: tc.svcErr}, slog.Default())
 
 			req := httptest.NewRequest(http.MethodPost, "/event", strings.NewReader(tc.body))
 			req.Header.Set("Content-Type", "application/json")

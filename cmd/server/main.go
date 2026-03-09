@@ -3,8 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
+	"os"
 	"os/signal"
 	"syscall"
 	"time"
@@ -22,25 +23,45 @@ import (
 func main() {
 	cfg, err := config.Load()
 	if err != nil {
-		log.Fatalf("config: %v", err)
+		slog.Error("config load failed", "error", err)
+		os.Exit(1)
 	}
+
+	// Parse log level; invalid values fall back to INFO.
+	var level slog.Level
+	if err := level.UnmarshalText([]byte(cfg.LogLevel)); err != nil {
+		slog.Warn("invalid LOG_LEVEL, defaulting to info", "value", cfg.LogLevel)
+		level = slog.LevelInfo
+	}
+
+	opts := &slog.HandlerOptions{Level: level}
+	var logger *slog.Logger
+	if cfg.AppEnv == "production" {
+		logger = slog.New(slog.NewJSONHandler(os.Stdout, opts))
+	} else {
+		logger = slog.New(slog.NewTextHandler(os.Stderr, opts))
+	}
+	slog.SetDefault(logger)
 
 	calFactory, err := calendar.NewGoogleCalendarClientFactory(cfg.GoogleCredentialsFile)
 	if err != nil {
-		log.Fatalf("calendar factory: %v", err)
+		logger.Error("calendar factory init failed", "error", err)
+		os.Exit(1)
 	}
 
 	llmProvider, err := llm.NewFromConfig(cfg)
 	if err != nil {
-		log.Fatalf("llm provider: %v", err)
+		logger.Error("llm provider init failed", "error", err)
+		os.Exit(1)
 	}
 
 	svc := service.NewEventService(llmProvider, calFactory)
-	h := handler.NewHandler(cfg, svc)
+	h := handler.NewHandler(cfg, svc, logger)
 
 	r := chi.NewRouter()
+	r.Use(middleware.RequestID)
 	r.Use(middleware.Heartbeat("/health"))
-	r.Use(middleware.Logger)
+	r.Use(newStructuredLogger(logger))
 	r.Use(middleware.Recoverer)
 
 	r.Post("/event", h.CreateEvent)
@@ -56,9 +77,10 @@ func main() {
 	defer stop()
 
 	go func() {
-		log.Printf("listening on http://localhost:%s", cfg.HTTPPort)
+		logger.Info("server listening", "addr", fmt.Sprintf("http://localhost:%s", cfg.HTTPPort))
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("server: %v", err)
+			logger.Error("server error", "error", err)
+			os.Exit(1)
 		}
 	}()
 
@@ -67,6 +89,7 @@ func main() {
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(shutdownCtx); err != nil {
-		log.Fatalf("shutdown: %v", err)
+		logger.Error("shutdown error", "error", err)
+		os.Exit(1)
 	}
 }

@@ -4,9 +4,11 @@ import (
 	"context"
 	"crypto/subtle"
 	"encoding/json"
-	"log"
+	"log/slog"
 	"net/http"
 	"strings"
+
+	"github.com/go-chi/chi/v5/middleware"
 
 	"github.com/kushturner/calendar-no-mi/internal/config"
 	"github.com/kushturner/calendar-no-mi/internal/models"
@@ -21,11 +23,12 @@ type eventCreator interface {
 type Handler struct {
 	cfg     *config.Config
 	service eventCreator
+	log     *slog.Logger
 }
 
 // NewHandler constructs a Handler. svc must implement eventCreator (service.EventService does).
-func NewHandler(cfg *config.Config, svc eventCreator) *Handler {
-	return &Handler{cfg: cfg, service: svc}
+func NewHandler(cfg *config.Config, svc eventCreator, log *slog.Logger) *Handler {
+	return &Handler{cfg: cfg, service: svc, log: log}
 }
 
 // writeJSON writes a JSON response with the given status code.
@@ -74,13 +77,20 @@ func (h *Handler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 
 	result, err := h.service.CreateFromText(r.Context(), user, body.Text)
 	if err != nil {
-		log.Printf("CreateEvent error: %v", err)
+		h.log.ErrorContext(r.Context(), "create event failed",
+			"error", err.Error(),
+			"request_id", middleware.GetReqID(r.Context()),
+			"user_id", user.ID,
+		)
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "internal server error"})
 		return
 	}
 
 	if result.EventURL == "" {
-		log.Printf("CreateEvent: service returned empty event URL")
+		h.log.ErrorContext(r.Context(), "service returned empty event URL",
+			"request_id", middleware.GetReqID(r.Context()),
+			"user_id", user.ID,
+		)
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "internal server error"})
 		return
 	}

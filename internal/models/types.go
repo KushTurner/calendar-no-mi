@@ -5,7 +5,7 @@ import "time"
 // User holds per-user state and credentials.
 type User struct {
 	ID           string
-	RefreshToken string
+	RefreshToken string // never log — contains OAuth credential
 	CalendarID   string
 	Timezone     string
 	RegisteredAt time.Time

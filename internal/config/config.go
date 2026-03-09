@@ -15,6 +15,10 @@ type Config struct {
 	GoogleCredentialsFile string
 	GoogleRefreshToken    string
 	GoogleCalendarID      string
+	// LogLevel controls slog verbosity (debug, info, warn, error). Invalid values fall back to info.
+	LogLevel string
+	// AppEnv controls log format: "production" → JSON to stdout, anything else → text to stderr.
+	AppEnv string
 }
 
 func Load() (*Config, error) {
@@ -30,6 +34,16 @@ func Load() (*Config, error) {
 		timezone = "Europe/London"
 	}
 
+	logLevel := os.Getenv("LOG_LEVEL")
+	if logLevel == "" {
+		logLevel = "info"
+	}
+
+	appEnv := os.Getenv("APP_ENV")
+	if appEnv == "" {
+		appEnv = "development"
+	}
+
 	cfg := &Config{
 		HTTPPort:              port,
 		OpenAIAPIKey:          os.Getenv("OPENAI_API_KEY"),
@@ -38,6 +52,8 @@ func Load() (*Config, error) {
 		GoogleCredentialsFile: os.Getenv("GOOGLE_CREDENTIALS_FILE"),
 		GoogleRefreshToken:    os.Getenv("GOOGLE_REFRESH_TOKEN"),
 		GoogleCalendarID:      os.Getenv("GOOGLE_CALENDAR_ID"),
+		LogLevel:              logLevel,
+		AppEnv:                appEnv,
 	}
 
 	if cfg.HTTPBearerToken == "" {
