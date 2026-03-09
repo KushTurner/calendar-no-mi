@@ -12,7 +12,11 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
+	"github.com/kushturner/calendar-no-mi/internal/calendar"
 	"github.com/kushturner/calendar-no-mi/internal/config"
+	"github.com/kushturner/calendar-no-mi/internal/handler"
+	"github.com/kushturner/calendar-no-mi/internal/llm"
+	"github.com/kushturner/calendar-no-mi/internal/service"
 )
 
 func main() {
@@ -21,10 +25,25 @@ func main() {
 		log.Fatalf("config: %v", err)
 	}
 
+	calFactory, err := calendar.NewGoogleCalendarClientFactory(cfg.GoogleCredentialsFile)
+	if err != nil {
+		log.Fatalf("calendar factory: %v", err)
+	}
+
+	llmProvider, err := llm.NewFromConfig(cfg)
+	if err != nil {
+		log.Fatalf("llm provider: %v", err)
+	}
+
+	svc := service.NewEventService(llmProvider, calFactory)
+	h := handler.NewHandler(cfg, svc)
+
 	r := chi.NewRouter()
 	r.Use(middleware.Heartbeat("/health"))
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+
+	r.Post("/event", h.CreateEvent)
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%s", cfg.HTTPPort),
