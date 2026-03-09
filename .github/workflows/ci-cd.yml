@@ -11,11 +11,10 @@ on:
       - "**.md"
       - "docs/**"
 
-permissions:
-  contents: write
-
 jobs:
   test:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -35,6 +34,8 @@ jobs:
   build-and-deploy:
     needs: test
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -96,14 +97,17 @@ jobs:
 
       - name: Start Application
         uses: appleboy/ssh-action@v1.2.0
+        env:
+          GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
         with:
           host: ${{ secrets.DEPLOYMENT_SSH_HOST }}
           username: ${{ secrets.DEPLOYMENT_SSH_USER }}
           key: ${{ secrets.DEPLOYMENT_SSH_KEY }}
+          envs: GOOGLE_CREDENTIALS_JSON
           script: |
             echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
             cd ~/${{ github.event.repository.name }}
-            echo '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' > credentials.json
+            echo "$GOOGLE_CREDENTIALS_JSON" > credentials.json
             docker compose down --remove-orphans
             docker compose up -d
             docker images "${{ secrets.DOCKER_USERNAME }}/calendar-no-mi" \
