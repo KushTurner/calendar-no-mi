@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -29,7 +30,7 @@ func Load() (*Config, error) {
 		timezone = "America/New_York"
 	}
 
-	return &Config{
+	cfg := &Config{
 		HTTPPort:              port,
 		OpenAIAPIKey:          os.Getenv("OPENAI_API_KEY"),
 		HTTPBearerToken:       os.Getenv("HTTP_BEARER_TOKEN"),
@@ -37,5 +38,14 @@ func Load() (*Config, error) {
 		GoogleCredentialsFile: os.Getenv("GOOGLE_CREDENTIALS_FILE"),
 		GoogleRefreshToken:    os.Getenv("GOOGLE_REFRESH_TOKEN"),
 		GoogleCalendarID:      os.Getenv("GOOGLE_CALENDAR_ID"),
-	}, nil
+	}
+
+	if cfg.HTTPBearerToken == "" {
+		return nil, fmt.Errorf("config: HTTP_BEARER_TOKEN is required")
+	}
+	if cfg.GoogleRefreshToken == "" {
+		return nil, fmt.Errorf("config: GOOGLE_REFRESH_TOKEN is required")
+	}
+
+	return cfg, nil
 }

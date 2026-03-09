@@ -41,9 +41,14 @@ func TestParseResponse(t *testing.T) {
 			t.Errorf("Start timezone offset: want %d seconds, got %d seconds", wantOffsetSecs, offsetSecs)
 		}
 
-		wantStart := time.Date(2026, 3, 9, 9, 0, 0, 0, time.FixedZone("", -5*60*60))
+		tz := time.FixedZone("", -5*60*60)
+		wantStart := time.Date(2026, 3, 9, 9, 0, 0, 0, tz)
 		if !got.Start.Equal(wantStart) {
 			t.Errorf("Start: want %v, got %v", wantStart, got.Start)
+		}
+		wantEnd := time.Date(2026, 3, 9, 9, 30, 0, 0, tz)
+		if !got.End.Equal(wantEnd) {
+			t.Errorf("End: want %v, got %v", wantEnd, got.End)
 		}
 
 		if got.Description != "Daily sync" {

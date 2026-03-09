@@ -1,0 +1,6 @@
+# OAuth credentials and user data — never commit these
+credentials.json
+users.json
+
+# Local environment overrides
+.env
