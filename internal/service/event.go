@@ -30,7 +30,10 @@ func (s *EventService) CreateFromText(ctx context.Context, user models.User, tex
 		return models.Result{}, fmt.Errorf("service: parse event: %w", err)
 	}
 
-	// 2. Validate end time for timed events
+	// 2. Validate required time fields before any API calls.
+	if parsed.AllDay && parsed.EndDate == "" {
+		return models.Result{}, fmt.Errorf("service: parsed all-day event has no end date")
+	}
 	if !parsed.AllDay && parsed.End.IsZero() {
 		return models.Result{}, fmt.Errorf("service: parsed event has no end time")
 	}

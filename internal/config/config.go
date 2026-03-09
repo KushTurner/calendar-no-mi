@@ -27,7 +27,7 @@ func Load() (*Config, error) {
 
 	timezone := os.Getenv("DEFAULT_TIMEZONE")
 	if timezone == "" {
-		timezone = "America/New_York"
+		timezone = "Europe/London"
 	}
 
 	cfg := &Config{
@@ -45,6 +45,9 @@ func Load() (*Config, error) {
 	}
 	if cfg.GoogleRefreshToken == "" {
 		return nil, fmt.Errorf("config: GOOGLE_REFRESH_TOKEN is required")
+	}
+	if cfg.OpenAIAPIKey == "" {
+		return nil, fmt.Errorf("config: OPENAI_API_KEY is required")
 	}
 
 	return cfg, nil

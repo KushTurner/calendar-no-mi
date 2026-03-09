@@ -7,8 +7,9 @@ import (
 func TestLoad(t *testing.T) {
 	// requiredEnv holds the minimum required env vars so Load() does not return an error.
 	requiredEnv := map[string]string{
-		"HTTP_BEARER_TOKEN":   "secret",
+		"HTTP_BEARER_TOKEN":    "secret",
 		"GOOGLE_REFRESH_TOKEN": "refresh",
+		"OPENAI_API_KEY":       "sk-test",
 	}
 
 	setRequired := func(t *testing.T) {
@@ -44,7 +45,7 @@ func TestLoad(t *testing.T) {
 		}
 	})
 
-	t.Run("defaults timezone to America/New_York", func(t *testing.T) {
+	t.Run("defaults timezone to Europe/London", func(t *testing.T) {
 		setRequired(t)
 		t.Setenv("DEFAULT_TIMEZONE", "")
 
@@ -52,14 +53,15 @@ func TestLoad(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		if cfg.DefaultTimezone != "America/New_York" {
-			t.Errorf("DefaultTimezone = %q, want %q", cfg.DefaultTimezone, "America/New_York")
+		if cfg.DefaultTimezone != "Europe/London" {
+			t.Errorf("DefaultTimezone = %q, want %q", cfg.DefaultTimezone, "Europe/London")
 		}
 	})
 
 	t.Run("error when HTTP_BEARER_TOKEN is missing", func(t *testing.T) {
 		t.Setenv("HTTP_BEARER_TOKEN", "")
 		t.Setenv("GOOGLE_REFRESH_TOKEN", "refresh")
+		t.Setenv("OPENAI_API_KEY", "sk-test")
 
 		_, err := Load()
 		if err == nil {
@@ -70,10 +72,22 @@ func TestLoad(t *testing.T) {
 	t.Run("error when GOOGLE_REFRESH_TOKEN is missing", func(t *testing.T) {
 		t.Setenv("HTTP_BEARER_TOKEN", "secret")
 		t.Setenv("GOOGLE_REFRESH_TOKEN", "")
+		t.Setenv("OPENAI_API_KEY", "sk-test")
 
 		_, err := Load()
 		if err == nil {
 			t.Fatal("expected error for missing GOOGLE_REFRESH_TOKEN, got nil")
+		}
+	})
+
+	t.Run("error when OPENAI_API_KEY is missing", func(t *testing.T) {
+		t.Setenv("HTTP_BEARER_TOKEN", "secret")
+		t.Setenv("GOOGLE_REFRESH_TOKEN", "refresh")
+		t.Setenv("OPENAI_API_KEY", "")
+
+		_, err := Load()
+		if err == nil {
+			t.Fatal("expected error for missing OPENAI_API_KEY, got nil")
 		}
 	})
 }

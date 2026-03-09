@@ -37,6 +37,12 @@ func writeJSON(w http.ResponseWriter, status int, v any) {
 
 // CreateEvent handles POST /event.
 func (h *Handler) CreateEvent(w http.ResponseWriter, r *http.Request) {
+	// Belt-and-suspenders: misconfigured server should never accept requests.
+	if h.cfg.HTTPBearerToken == "" {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "internal server error"})
+		return
+	}
+
 	// Auth: timing-safe bearer token comparison.
 	authHeader := r.Header.Get("Authorization")
 	token, ok := strings.CutPrefix(authHeader, "Bearer ")
@@ -69,6 +75,12 @@ func (h *Handler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 	result, err := h.service.CreateFromText(r.Context(), user, body.Text)
 	if err != nil {
 		log.Printf("CreateEvent error: %v", err)
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "internal server error"})
+		return
+	}
+
+	if result.EventURL == "" {
+		log.Printf("CreateEvent: service returned empty event URL")
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "internal server error"})
 		return
 	}
