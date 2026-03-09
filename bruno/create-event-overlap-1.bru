@@ -1,0 +1,21 @@
+meta {
+  name: Create Event - Overlap (First)
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{BASE_URL}}/event
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{BEARER_TOKEN}}
+}
+
+body:json {
+  {
+    "text": "Team standup tomorrow at 3pm for 30 minutes"
+  }
+}

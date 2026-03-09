@@ -1,0 +1,21 @@
+meta {
+  name: Create Event - Basic
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BASE_URL}}/event
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{BEARER_TOKEN}}
+}
+
+body:json {
+  {
+    "text": "Lunch with Sarah tomorrow at 1pm for an hour"
+  }
+}

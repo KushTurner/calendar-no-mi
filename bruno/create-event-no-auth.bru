@@ -1,0 +1,17 @@
+meta {
+  name: Create Event - No Auth (expect 401)
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{BASE_URL}}/event
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "text": "Lunch tomorrow at noon"
+  }
+}

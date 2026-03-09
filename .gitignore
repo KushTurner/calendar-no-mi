@@ -4,3 +4,6 @@ users.json
 
 # Local environment overrides
 .env
+
+# Bruno secret environment values (contains bearer token)
+bruno/environments/*.secrets.json
