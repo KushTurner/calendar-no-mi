@@ -1,0 +1,11 @@
+services:
+  calendar-no-mi:
+    image: ${REGISTRY}/calendar-no-mi:${APP_VERSION}
+    container_name: calendar-no-mi
+    restart: unless-stopped
+    ports:
+      - "8090:8080"
+    env_file:
+      - .env
+    volumes:
+      - ./credentials.json:/app/credentials.json:ro
