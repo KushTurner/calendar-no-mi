@@ -14,7 +14,7 @@ Creating calendar events is friction-heavy: open app → tap fields → pick tim
 …and have a Google Calendar event created automatically — no form, no tapping.
 
 **v1 scope (implemented):**
-- Accept natural-language text via an HTTP endpoint (Postman-testable)
+- Accept natural-language text via an HTTP endpoint (Bruno collection in `bruno/`)
 - Parse event details with an LLM (OpenAI)
 - Write to Google Calendar — single user, no conflict detection, no clarification loop
 - Return the created event URL
@@ -35,7 +35,7 @@ Creating calendar events is friction-heavy: open app → tap fields → pick tim
 │                                                                 │
 │  ┌──────────────┐                                               │
 │  │  HTTP Client │                                               │
-│  │  (Postman /  │                                               │
+│  │  (Bruno /    │                                               │
 │  │   cURL / app)│                                               │
 │  └──────┬───────┘                                               │
 │         │  POST /event                                          │
