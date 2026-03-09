@@ -93,6 +93,12 @@ HTTP_BEARER_TOKEN=your_secret_token_here
 
 # Your local timezone (used when the LLM interprets event times)
 DEFAULT_TIMEZONE=Europe/London
+
+# Logging verbosity: debug, info, warn, error (default: info)
+# LOG_LEVEL=debug
+
+# Environment: "production" uses JSON logs to stdout; anything else uses text to stderr
+# APP_ENV=development
 ```
 
 `HTTP_BEARER_TOKEN` is used to authenticate requests to `POST /event`. Set it to any secret string you choose.

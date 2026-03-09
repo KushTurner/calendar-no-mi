@@ -1,3 +1,8 @@
+// Package main implements the calendar-no-mi HTTP server.
+//
+// logger.go provides a custom chi LogFormatter backed by log/slog.
+// chi's built-in middleware.Logger expects a middleware.LoggerInterface (Print method),
+// not *slog.Logger, so we implement LogFormatter and LogEntry directly.
 package main
 
 import (
@@ -33,7 +38,13 @@ type structuredLogEntry struct {
 }
 
 func (e *structuredLogEntry) Write(status, bytes int, _ http.Header, elapsed time.Duration, _ interface{}) {
-	e.logger.InfoContext(
+	logFn := e.logger.InfoContext
+	if status >= 500 {
+		logFn = e.logger.ErrorContext
+	} else if status >= 400 {
+		logFn = e.logger.WarnContext
+	}
+	logFn(
 		e.request.Context(),
 		"request",
 		"method", e.request.Method,

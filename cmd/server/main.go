@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -36,7 +37,8 @@ func main() {
 
 	opts := &slog.HandlerOptions{Level: level}
 	var logger *slog.Logger
-	if cfg.AppEnv == "production" {
+	// Case-insensitive match so APP_ENV=Production and APP_ENV=PRODUCTION also work.
+	if strings.EqualFold(cfg.AppEnv, "production") {
 		logger = slog.New(slog.NewJSONHandler(os.Stdout, opts))
 	} else {
 		logger = slog.New(slog.NewTextHandler(os.Stderr, opts))
@@ -60,6 +62,8 @@ func main() {
 
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
+	// Heartbeat is registered before the request logger intentionally: /health responses
+	// are high-frequency and add no diagnostic value to the access log.
 	r.Use(middleware.Heartbeat("/health"))
 	r.Use(newStructuredLogger(logger))
 	r.Use(middleware.Recoverer)
@@ -76,15 +80,20 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
+	serverErr := make(chan error, 1)
 	go func() {
 		logger.Info("server listening", "addr", fmt.Sprintf("http://localhost:%s", cfg.HTTPPort))
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			logger.Error("server error", "error", err)
-			os.Exit(1)
+			serverErr <- err
 		}
 	}()
 
-	<-ctx.Done()
+	select {
+	case <-ctx.Done():
+	case err := <-serverErr:
+		logger.Error("server error", "error", err)
+		os.Exit(1)
+	}
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
