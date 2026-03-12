@@ -7,3 +7,4 @@ users.json
 
 # Bruno secret environment values (contains bearer token)
 bruno/environments/*.secrets.json
+.DS_store
