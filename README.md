@@ -129,3 +129,4 @@ A successful response returns a link to the created event:
 ```json
 {"event_url": "https://www.google.com/calendar/event?eid=..."}
 ```
+
