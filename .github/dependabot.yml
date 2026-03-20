@@ -8,9 +8,6 @@ updates:
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
-    ignore:
-      - dependency-name: "*"
-        dependency-type: "indirect"
 
   - package-ecosystem: "github-actions"
     directory: "/"
