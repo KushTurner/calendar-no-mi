@@ -117,7 +117,7 @@ jobs:
             curl --fail --retry 5 --retry-delay 3 http://localhost:8090/health
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ env.APP_VERSION }}
           generate_release_notes: true
