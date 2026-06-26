@@ -2,7 +2,7 @@ name: CI/CD
 
 env:
   APP_NAME: calendar-no-mi
-  GO_VERSION: 1.25.0
+  GO_VERSION: 1.26.4
 
 on:
   push:
