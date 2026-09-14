@@ -1,12 +1,12 @@
 module github.com/kushturner/calendar-no-mi
 
-go 1.25.8
+go 1.26.0
 
 require (
 	github.com/go-chi/chi/v5 v5.3.0
 	github.com/joho/godotenv v1.5.1
 	github.com/openai/openai-go v1.12.0
-	golang.org/x/oauth2 v0.36.0
+	golang.org/x/oauth2 v0.37.0
 	google.golang.org/api v0.286.0
 )
 
